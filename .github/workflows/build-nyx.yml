@@ -1,0 +1,32 @@
+name: Build Hekate & Nyx
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'nyx/nyx_gui/frontend/gui.c'
+      - '.github/workflows/build-nyx.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitarm:latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build hekate & Nyx
+        run: |
+          export DEVKITPRO=/opt/devkitpro
+          export DEVKITARM=/opt/devkitpro/devkitARM
+          export PATH="$DEVKITARM/bin:$PATH"
+          make -j$(nproc)
+
+      - name: Upload nyx.bin
+        uses: actions/upload-artifact@v4
+        with:
+          name: hekate-6.5.5-custom-nyx
+          path: |
+            output/nyx.bin
+            output/hekate_ctcaer_*.bin
