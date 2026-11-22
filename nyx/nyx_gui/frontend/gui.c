@@ -1487,7 +1487,6 @@ typedef struct _launch_menu_entries_t
 
 static launch_menu_entries_t launch_ctxt;
 static lv_obj_t *launch_bg = NULL;
-static bool launch_bg_done = false;
 
 static lv_res_t _launch_more_cfg_action(lv_obj_t *btn)
 {
@@ -1523,13 +1522,12 @@ static lv_res_t _win_launch_close_action(lv_obj_t * btn)
 
 	lv_obj_del(win);
 
-	if (n_cfg.home_screen && !launch_bg_done && hekate_bg)
+	if (launch_bg && hekate_bg)
 	{
 		lv_obj_set_opa_scale_enable(launch_bg, true);
 		lv_obj_set_opa_scale(launch_bg, LV_OPA_TRANSP);
 		//if (launch_bg)
 		//	lv_obj_del(launch_bg); //! TODO: Find why it hangs.
-		launch_bg_done = true;
 	}
 
 	close_btn = NULL;
@@ -1545,12 +1543,20 @@ static lv_obj_t *create_window_launch(const char *win_title)
 	win_bg_style.body.main_color = lv_theme_get_current()->bg->body.main_color;
 	win_bg_style.body.grad_color = win_bg_style.body.main_color;
 
-	if (n_cfg.home_screen && !launch_bg_done && hekate_bg)
+	if (hekate_bg)
 	{
-		lv_obj_t *img = lv_img_create(lv_scr_act(), NULL);
-		lv_img_set_src(img, hekate_bg);
+		if (!launch_bg)
+		{
+			lv_obj_t *img = lv_img_create(lv_scr_act(), NULL);
+			lv_img_set_src(img, hekate_bg);
 
-		launch_bg = img;
+			launch_bg = img;
+		}
+		else
+		{
+			lv_obj_set_opa_scale(launch_bg, LV_OPA_COVER);
+			lv_obj_set_opa_scale_enable(launch_bg, false);
+		}
 	}
 
 	lv_obj_t *win = lv_win_create(lv_scr_act(), NULL);
@@ -1558,7 +1564,7 @@ static lv_obj_t *create_window_launch(const char *win_title)
 
 	lv_obj_set_size(win, LV_HOR_RES, LV_VER_RES);
 
-	if (n_cfg.home_screen && !launch_bg_done && hekate_bg)
+	if (hekate_bg)
 	{
 		lv_style_copy(&win_header, lv_theme_get_current()->win.header);
 		win_header.body.opa = LV_OPA_TRANSP;
